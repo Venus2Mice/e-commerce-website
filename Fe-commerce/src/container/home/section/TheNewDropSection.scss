@@ -1,0 +1,36 @@
+.the-new-drop-container {
+    width           : 100%;
+    text-align      : left;
+    // border       : 1px solid red;
+    height          : fit-content;
+
+    .skeleton-container {
+        width : 257.6px;
+        height: 440px;
+    }
+
+    .section-clothes {
+
+        width    : 100%;
+        //border : 1px solid green;
+
+
+        .swiper {
+            width      : 100%;
+            height     : 100%;
+            // overflow: visible;
+
+        }
+
+        .swiper-slide {}
+
+        // .swiper-button-prev,
+        // .swiper-button-next {
+        //     color: black
+        // }
+
+        .swiper-wrapper {
+            transition-duration: 0.8s !important;
+        }
+    }
+}

@@ -1,0 +1,49 @@
+.best-item-container {
+    width           : 100%;
+    text-align      : left;
+    // border       : 1px solid red;
+    height          : fit-content;
+
+    .skeleton-container {
+        width : 257.6px;
+        height: 440px;
+    }
+
+    .title {
+        width         : fit-content;
+        font-size     : 28px;
+        font-weight   : 700;
+        line-height   : 1;
+        color         : #000;
+        font-family   : 'Garamond Premiere', 'pretendard';
+        max-width     : 1720px;
+        width         : 92%;
+        margin        : 0 0 22px 0;
+        letter-spacing: -0.5px;
+    }
+
+    .section-clothes {
+
+        width    : 100%;
+        //border : 1px solid green;
+
+
+        .swiper {
+            width      : 100%;
+            height     : 100%;
+            // overflow: visible;
+
+        }
+
+        .swiper-slide {}
+
+        // .swiper-button-prev,
+        // .swiper-button-next {
+        //     color: black
+        // }
+
+        .swiper-wrapper {
+            transition-duration: 0.8s !important;
+        }
+    }
+}

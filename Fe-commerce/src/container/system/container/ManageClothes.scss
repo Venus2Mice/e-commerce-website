@@ -1,0 +1,149 @@
+.manage-clothes-container {
+    width: 100%;
+
+    .color-group {
+        cursor            : pointer;
+        // width          : 50px;
+        // height         : 50px;
+        // display        : flex;
+        // flex-direction : row;
+        // justify-content: center;
+        // align-items    : center;
+        // margin-top     : 25%;
+    }
+
+    .css-4zu5p1-MuiAvatarGroup-root .MuiAvatar-root {
+        border     : 2px solid var(--mui-palette-background-default);
+        box-sizing : content-box;
+        margin-left: var(--AvatarGroup-spacing, -8px);
+        height     : 31px;
+        width      : 32px;
+        font-size  : 96%;
+    }
+}
+
+.manage-clothes-mardown {
+    position        : relative;
+    width           : 650px;
+    height          : fit-content;
+    background-color: white;
+    padding         : 30px;
+}
+
+.mardown-btn-container {
+    margin-top     : 10px;
+    display        : flex;
+    flex-direction : row;
+    width          : 100%;
+    justify-content: right;
+    gap            : 15px;
+}
+
+
+
+.upload-image-container {
+    display       : flex;
+    flex-direction: row;
+    width         : 100%;
+    gap           : 10px;
+
+    .content-left {
+        width  : 325px;
+        border : 1px solid rgba(0, 0, 0, 0.1);
+        padding: 10px;
+    }
+
+    .content-right {
+        display       : flex;
+        flex-direction: column;
+
+        .text-information {
+            width : 500px;
+            height: 340px;
+
+        }
+
+        .group-button {
+            margin-top        : 5px;
+            border            : 1px solid rgba(0, 0, 0, 0.1);
+            width             : 500px;
+            height            : 90px;
+            display           : flex;
+            flex-direction    : row;
+            justify-content   : center;
+            align-items       : center;
+            gap               : 30px;
+            // padding-top    : 10px;
+        }
+    }
+}
+
+.manage-clothes-skeleton {
+    display       : flex;
+    flex-direction: column;
+    position      : relative;
+    height        : 100%;
+    padding-top   : 20px;
+
+    .row-skeleton {
+        display       : flex;
+        flex-direction: row;
+        gap           : 5px;
+        width         : 100%;
+        position      : relative;
+        height        : 50px;
+
+        .colu-1 {
+            position: absolute;
+
+        }
+
+        .colu-2 {
+            position: absolute;
+            left    : 93px;
+        }
+
+        .colu-3 {
+            position: absolute;
+            left    : 220px;
+        }
+
+        .colu-4 {
+            position: absolute;
+            left    : 575px;
+        }
+
+        .colu-5 {
+            position: absolute;
+            left    : 695px;
+        }
+
+        .colu-6 {
+            position: absolute;
+            left    : 820px;
+        }
+
+        .colu-7 {
+            position: absolute;
+            left    : 985px;
+        }
+
+        .colu-8 {
+            position: absolute;
+            left    : 1135px;
+        }
+
+        .colu-9 {
+            position: absolute;
+            left    : 1280px;
+        }
+    }
+}
+
+.css-11cfq65-MuiTablePagination-displayedRows {
+    margin-top: auto;
+}
+
+.css-1swebvn-MuiTablePagination-root .MuiTablePagination-selectLabel {
+    display: block;
+}
