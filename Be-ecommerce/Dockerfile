@@ -1,9 +1,18 @@
-FROM node:lts-alpine as build
+FROM node:18-alpine
+
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
-RUN npm install -g @babel/core @babel/cli
+
+# Copy application files
 COPY . .
 
-RUN npm run build-src
-CMD ["npm","run","build"]
+# Expose port
+EXPOSE 8080
+
+# Start application
+CMD ["npm", "start"]

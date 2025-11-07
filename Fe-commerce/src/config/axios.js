@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ToastContainer, toast } from 'react-toastify';
 
 const instance = axios.create({
-    baseURL: 'http://localhost:8080'
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080'
 });
 
 instance.defaults.withCredentials = true;

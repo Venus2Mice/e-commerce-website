@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17
+    container_name: ecommerce-postgres
+    environment:
+      POSTGRES_DB: e_commerce_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service
+  backend:
+    build:
+      context: ./Be-ecommerce
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=root123
+      - DATABASE=e_commerce_db
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_DIALECT=postgres
+      - JWT_SECRET=your-secret-key-here-change-in-production
+      - REACT_URL=https://ominous-parakeet-xgq667557rw3vjjw-3000.app.github.dev
+      - HOST_URL=ominous-parakeet-xgq667557rw3vjjw-8080.app.github.dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./Fe-commerce
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: https://ominous-parakeet-xgq667557rw3vjjw-8080.app.github.dev
+    container_name: ecommerce-frontend
+    environment:
+      - REACT_APP_API_URL=https://ominous-parakeet-xgq667557rw3vjjw-8080.app.github.dev
+      - PORT=3000
+      - FAST_REFRESH=false
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+networks:
+  ecommerce-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
