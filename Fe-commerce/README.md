@@ -45,6 +45,15 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
+## Project Documentation
+
+This repo includes additional frontend documentation to help new contributors and developers:
+
+- `FE-EXPLAIN.md` - Tóm tắt cấu trúc FE và các khái niệm chính (structure, build, APIs, store, etc.).
+- `FE-HOWTO.md` - Hướng dẫn chi tiết, từng bước cho developer mới để thêm feature, API, route, socket, và quy trình debug, build & deploy.
+
+Please read `FE-EXPLAIN.md` first for a high-level overview, then `FE-HOWTO.md` for practical step-by-step examples.
+
 ### Code Splitting
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)

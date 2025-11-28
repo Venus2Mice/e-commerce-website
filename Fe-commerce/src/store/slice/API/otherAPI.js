@@ -38,9 +38,12 @@ export const otherAPI = createApi({
                 }
             }
         }),
+        createContact: build.mutation({
+            query: (data) => ({ url: '/api/contact/create', method: 'post', data }),
+        }),
 
     }),
 })
 
 
-export const { useGetAddresssDataMutation } = otherAPI
+export const { useGetAddresssDataMutation, useCreateContactMutation } = otherAPI

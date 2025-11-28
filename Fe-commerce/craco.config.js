@@ -16,6 +16,9 @@ module.exports = {
             webpackConfig.resolve = {
                 ...webpackConfig.resolve,
                 symlinks: false,
+                fallback: {
+                    ...(webpackConfig.resolve.fallback || {}),
+                },
                 alias: {
                     ...webpackConfig.resolve.alias,
                 },

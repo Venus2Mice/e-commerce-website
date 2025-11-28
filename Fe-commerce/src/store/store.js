@@ -8,6 +8,7 @@ import { persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import { combineReducers } from "redux";
 import shopingCartReducer from './slice/Reducer/shoppingCartSilce'
+import contactReducer from './slice/Reducer/contactSlice'
 import { otherAPI } from './slice/API/otherAPI';
 import otherReducer from './slice/Reducer/otherSlice'
 import checkOutReducer from './slice/Reducer/checkOutSlice';
@@ -19,6 +20,7 @@ const reducers = combineReducers({
     system: systemReducer,
     other: otherReducer,
     checkOut: checkOutReducer,
+    contact: contactReducer,
     [userAPI.reducerPath]: userAPI.reducer,
     [clothesAPI.reducerPath]: clothesAPI.reducer,
     [otherAPI.reducerPath]: otherAPI.reducer,

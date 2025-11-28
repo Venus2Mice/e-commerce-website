@@ -2,6 +2,7 @@ import React from 'react';
 import Login from '../container/home/auth/Login.js';
 import Home from '../container/home/Home.js';
 import { BrowserRouter, Routes, Route } from "react-router";
+import Contact from '../container/home/contact/Contact';
 import Register from '../container/home/auth/Register.js'
 import AuthLayout from '../container/home/auth/AuthLayout.js';
 import UserProfile from '../container/home/profile/UserProfile.js';
@@ -22,6 +23,7 @@ function RouteIndex(props) {
                         <Route path="login" element={<Login />} />
                         <Route path="register" element={<Register />} />
                         <Route path="product" element={<Product></Product>}></Route>
+                        <Route path="contact" element={<Contact />}></Route>
                         <Route path="order" element={<ShoppingCart></ShoppingCart>}></Route>
                         <Route path="list" element={<ListAllProduct />}></Route>
                         <Route path='user' >
