@@ -51,6 +51,7 @@ This repo includes additional frontend documentation to help new contributors an
 
 - `FE-EXPLAIN.md` - Tóm tắt cấu trúc FE và các khái niệm chính (structure, build, APIs, store, etc.).
 - `FE-HOWTO.md` - Hướng dẫn chi tiết, từng bước cho developer mới để thêm feature, API, route, socket, và quy trình debug, build & deploy.
+ - `FE-FILES-DETAIL.md` - Chi tiết mô tả từng file trong thư mục FE, giải thích lý do và tác dụng của từng file.
 
 Please read `FE-EXPLAIN.md` first for a high-level overview, then `FE-HOWTO.md` for practical step-by-step examples.
 

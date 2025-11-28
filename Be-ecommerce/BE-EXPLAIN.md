@@ -1,3 +1,127 @@
+# Giải thích Backend — Be-ecommerce
+
+## ✅ Tổng quan
+- Backend nằm trong thư mục `Be-ecommerce`.
+- Sử dụng Node.js + Express và Sequelize (ORM) cho truy vấn DB.
+- Sequelize hỗ trợ nhiều dialect (Postgres, MySQL, SQLite) — định nghĩa bằng biến môi trường `DATABASE_DIALECT`.
+- Socket.io được dùng cho realtime (chat, cập nhật) và xác thực dựa trên cookie/JWT thông qua middleware.
+- API được định nghĩa dưới `namespace /api` (xem `src/routes/api.js`).
+- Sử dụng `sequelize-cli` để tạo migration và seeders; các file để ở `src/migrations` và `src/seeders`.
+
+---
+
+## 📁 Các file & thư mục chính
+- `package.json` — scripts start/build và dependency.
+- `src/sever.js` — entry server, cấu hình middleware, route và socket.
+- `src/config/` — config DB, CORS, view engine, connect DB.
+- `src/routes/` — định nghĩa API routes và web routes.
+- `src/controllers/` — controller nhận request, gọi service, trả response.
+- `src/serivces/` — business logic, giao tiếp DB qua models.
+- `src/models/` — các Sequelize model và file `index.js` để khởi associations.
+- `src/middleware/` — JWT auth, SocketIO, OpenAI etc.
+- `src/migrations/`, `src/seeders/` — migration & seeders.
+
+---
+
+## 🎯 Khởi tạo server & luồng request (tóm tắt)
+1. `src/sever.js` khởi tạo Express app và đăng ký middleware (CORS, body parser, cookie parser).
+2. Đăng ký route API & web: `initApiRoutes`, `initWebRoutes`.
+3. Kết nối DB bằng `connectToDataBase()`.
+4. Khởi socket io và attach `socketService(io)`.
+5. Lắng nghe port (mặc định `PORT=8080`).
+
+Luồng request mẫu:
+HTTP request -> `src/routes/api.js` -> Controller (`src/controllers/*`) -> Service (`src/serivces/*`) -> Model (`src/models/*`) -> DB.
+
+Nguyên tắc: Controller mỏng (parse/validate) — Service chứa logic nghiệp vụ và tương tác DB; Service trả chuẩn `{ DT, EC, EM }`.
+
+---
+
+## 🔧 Biến môi trường quan trọng
+- `PORT` — cổng server.
+- `DATABASE`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_HOST`, `DATABASE_PORT` — cấu hình DB.
+- `DATABASE_DIALECT` — `postgres|mysql|sqlite`.
+- `DATABASE_STORAGE` — file sqlite local (nếu dùng sqlite).
+- `JWT_SECRET` — secret dùng để ký JWT.
+- `REACT_URL`, `HOST_URL` — các biến liên quan FE.
+
+---
+
+## 📦 DB & ORM (Sequelize)
+- Sử dụng `sequelize-cli` để tạo và chạy migrations/seeders.
+- `src/models` chứa định nghĩa các model với `Model.init` và `associate`.
+- Migrations mẫu tạo bảng dùng `up`/`down` để chạy/rollback.
+
+Ví dụ model và migration cho `ContactMessage` (mô phỏng) có thể dùng để minh hoạ cách thêm data table.
+
+---
+
+## 🔄 Chuẩn response API
+- Mọi endpoint trả về đối tượng `{ DT, EC, EM }`:
+  - `DT`: dữ liệu trả về
+  - `EC`: error code (0 = success)
+  - `EM`: error message
+
+Controllers nên sử dụng try/catch và trả response có cấu trúc chuẩn; services xử lý lỗi DB và trả `EC: -1` khi lỗi.
+
+---
+
+## 🔐 Middleware & auth
+- `JWTservice` xử lý cookie/JWT, gồm `checkCookieService` (kiểm tra bỏ qua exceptionPath) và `authenticateCookieService` (kiểm quyền dựa trên `Group`/`Role`).
+- Để mở route public, thêm path vào `exceptionPath` trong `JWTservice`.
+- `OpenAI` middleware xử lý gọi API OpenAI.
+
+---
+
+## 🔊 Socket IO (tóm tắt)
+- `SocketIO.js` định nghĩa event: `CREATE_ROOM`, `JOIN_ROOM`, `NEW_MESSAGE`, `FIND_ALL_ROOM`.
+- Tất cả event persist vào DB (`Room`, `Message`) để lưu lịch sử chat.
+- Khi mở rộng socket: đặt logic xử lý ở service (ví dụ `messageService`) để tách luồng DB và socket.
+
+---
+
+## 📋 Migrations, Seeders & Dev DB
+- Tạo migration: `npx sequelize-cli model:generate --name X --attributes ...`.
+- Chạy migration: `npx sequelize-cli db:migrate`.
+- Chạy seeders: `npx sequelize-cli db:seed:all`.
+- Dùng sqlite local để dev nhanh: set `DATABASE_DIALECT=sqlite` và `DATABASE_STORAGE=./database.sqlite`.
+
+---
+
+## 🛠 Cách thêm API mới (pattern)
+1. Tạo migration & model nếu cần.
+2. Viết service (tương tác DB + nghiệp vụ) trong `src/serivces/`.
+3. Viết controller trong `src/controllers/` để xử lý request/response.
+4. Đăng ký route trong `src/routes/api.js`.
+5. Viết unit test cho service và integration test cho controller (ví dụ `supertest`).
+6. Thêm seed nếu cần.
+
+---
+
+## ❗ Gợi ý triển khai & lưu ý
+- CORS: nếu backend trả cookie, FE phải gửi cookie (axios `withCredentials`) và server phải cho phép `Access-Control-Allow-Credentials`.
+- Prod: chạy migration trong CI trước khi deploy.
+- DB SSL: bật `DATABASE_SSL` và `dialectOptions` khi dùng Postgres/Cloud DB.
+- Ảnh/Upload: chú ý `formidable` & cấu hình body parser để không gây xung đột.
+
+---
+
+## 🧭 Nơi mở rộng & mapping route nhanh
+- Các endpoint hiện có nằm trong `src/routes/api.js` (vd: user, clothes, bill, review, webhook, openAI, socket id).
+- Nếu cần thêm route có auth: tạo Role & Group mapping trong DB và seeder; cho phép route theo permission.
+
+---
+
+## ✅ Các lệnh cần nhớ
+- Chạy server dev: `npm install && npm start` (từ `Be-ecommerce`).
+- Migrate/seed: `npx sequelize-cli db:migrate` và `npx sequelize-cli db:seed:all`.
+- Build production: Dùng Dockerfile hoặc `npm run build-src`/`npm run build` (tuỳ thiết lập).
+
+---
+
+Nếu bạn muốn, mình có thể:
+- Thêm ví dụ chi tiết `ContactMessage` endpoint (model + migration + service + controller + route + seeder + test).
+- Thêm hướng dẫn cấu hình CI để chạy migration & tests tự động.
 # Backend Explanation — Be-ecommerce
 
 ## ✅ Overview
