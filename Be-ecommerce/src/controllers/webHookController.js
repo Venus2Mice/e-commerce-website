@@ -1,4 +1,4 @@
-import webHookService from '../serivces/webHookService'
+import webHookService from '../services/webHookService'
 
 const handleGetPayment = async (req, res) => {
     try {

@@ -35,8 +35,10 @@ services:
       - DATABASE_PORT=5432
       - DATABASE_DIALECT=postgres
       - JWT_SECRET=your-secret-key-here-change-in-production
-      - REACT_URL=https://ominous-parakeet-xgq667557rw3vjjw-3000.app.github.dev
-      - HOST_URL=ominous-parakeet-xgq667557rw3vjjw-8080.app.github.dev
+      # REACT_URL should be the URL of the frontend for CORS and other references
+      - REACT_URL=${FRONTEND_HOST_EXTERNAL:-http://localhost:3000}
+      # HOST_URL should be the URL of this backend service
+      - HOST_URL=${BACKEND_HOST_EXTERNAL:-http://localhost:8080}
     ports:
       - "8080:8080"
     depends_on:
@@ -52,10 +54,13 @@ services:
       context: ./Fe-commerce
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_URL: https://ominous-parakeet-xgq667557rw3vjjw-8080.app.github.dev
+        # For the frontend build, REACT_APP_API_URL should point to the backend service.
+        # Use a placeholder that defaults to the internal service name.
+        REACT_APP_API_URL: ${API_URL_EXTERNAL:-http://backend:8080}
     container_name: ecommerce-frontend
     environment:
-      - REACT_APP_API_URL=https://ominous-parakeet-xgq667557rw3vjjw-8080.app.github.dev
+      # At runtime, also provide the API URL.
+      - REACT_APP_API_URL=${API_URL_EXTERNAL:-http://backend:8080}
       - PORT=3000
       - FAST_REFRESH=false
     ports:

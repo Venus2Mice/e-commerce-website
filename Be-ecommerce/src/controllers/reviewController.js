@@ -1,4 +1,4 @@
-import reviewService from '../serivces/reviewService'
+import reviewService from '../services/reviewService'
 
 const handleCreateReview = async (req, res) => {
     try {

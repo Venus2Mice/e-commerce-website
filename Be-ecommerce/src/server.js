@@ -40,7 +40,7 @@ connectToDataBase();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:3000',
+        origin: process.env.REACT_URL || 'http://localhost:3000',
         methods: ["GET", "POST"],
         credentials: true,
         allowEIO3: true

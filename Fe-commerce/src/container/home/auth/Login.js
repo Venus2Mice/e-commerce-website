@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { SignInPage } from '@toolpad/core/SignInPage';
 import { useTheme } from '@mui/material/styles';
-import { useLazyLoginQuery } from '../../../store/slice/API/userAPI';
+import { useLoginMutation } from '../../../store/slice/API/userAPI';
 import {
     Button,
     FormControl,
@@ -39,7 +39,7 @@ function Login(props) {
     const dispatch = useDispatch();
     const userData = useSelector((state) => state.user.userData);
     const theme = useTheme();
-    const [loginSerivce, { data, error, isLoading }] = useLazyLoginQuery('', '');
+    const [loginSerivce, { data, error, isLoading }] = useLoginMutation();
     const [isOpenBackDrop, setIsOpenBackDrop] = useState(false);
     const navigate = useNavigate();
     return (

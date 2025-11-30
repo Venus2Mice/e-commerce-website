@@ -1,4 +1,4 @@
-import clothesService from '../serivces/clothesService'
+import clothesService from '../services/clothesService'
 
 const handleCreateClothes = async (req, res) => {
     try {

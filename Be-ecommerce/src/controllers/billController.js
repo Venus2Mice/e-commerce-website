@@ -1,4 +1,4 @@
-import billService from '../serivces/billService'
+import billService from '../services/billService'
 
 const handleCreateBill = async (req, res) => {
     try {

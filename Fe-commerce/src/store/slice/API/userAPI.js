@@ -21,15 +21,14 @@ const axiosBaseQuery = ({ baseUrl } = { baseUrl: "" }) =>
 export const userAPI = createApi({
     reducerPath: 'userAPI',
     baseQuery: axiosBaseQuery({
-        // baseUrl: 'http://3.0.175.103:8080',
-        baseUrl: 'http://localhost:8080',
-        // baseUrl: 'https://f806-2001-ee0-41c1-b654-6996-5255-3ccf-91b0.ngrok-free.app'
+        baseUrl: ''
     }),
     endpoints: (build) => ({
-        login: build.query({
-            query: (query) => ({
-                url: `/api/user/login?loginAcc=${query.loginAcc}&password=${query.password}`,
-                method: 'get'
+        login: build.mutation({
+            query: (data) => ({
+                url: `/api/user/login`,
+                method: 'post',
+                data: data
             })
         }),
         checkUserAccount: build.query({ query: () => ({ url: `/api/account`, method: 'get' }) }),
@@ -96,7 +95,7 @@ export const userAPI = createApi({
 })
 
 
-export const { useRegisterMutation, useLazyLoginQuery,
+export const { useRegisterMutation, useLoginMutation,
     useGetUserDataQuery, useLazyGetUserDataQuery, useCreateUserMutation,
     useLazyCheckUserAccountQuery, useUpdateMutation,
     useCreateBillMutation, useGetBillMutation,
