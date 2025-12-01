@@ -11,85 +11,99 @@ const getPaymentWebHookService = async (webHookData) => {
                 EM: 'Err from webhook service: missing parameter!'
             }
         }
-        else {
-            await console.log('webhook', webHookData)
-            let description = webHookData.description;
 
-            let productDes = description.split(' ')[1];
-            productDes = productDes.split('-')[1];
-            let productCode = productDes.slice(2);
-            console.log('product des',productDes);
-            console.log('pr', productCode)
+        await console.log('webhook', webHookData);
+        const description = webHookData.description;
 
+        // Try to extract the bill id from description robustly (first sequence of digits)
+        const idMatch = description && description.match(/\d+/);
+        if (!idMatch) {
+            return {
+                DT: '',
+                EC: -1,
+                EM: 'Err from webhook service: cannot parse bill id from description'
+            }
+        }
+        const productCode = idMatch[0];
 
-            let bill = await db.Bill.findOne({
-                where: { id: productCode },
-                attributes: {
-                    exclude: ['colorSizeId']
-                },
-                include: [
-                    {
-                        model: db.ShoppingCart,
-                        attributes: ['billId', 'colorSizeId', 'total'],
+        // find bill with shopping cart lines
+        const bill = await db.Bill.findOne({
+            where: { id: productCode },
+            attributes: { exclude: ['colorSizeId'] },
+            include: [
+                {
+                    model: db.ShoppingCart,
+                    attributes: ['billId', 'colorSizeId', 'total']
+                }
+            ]
+        });
 
-                    }
+        if (!bill) {
+            return {
+                DT: '',
+                EC: -1,
+                EM: 'Err from webhook service: bill not found'
+            }
+        }
 
-                ],
+        // If incoming transfer, process using transaction and idempotency
+        if (webHookData.transferType === 'in') {
+            const result = await db.sequelize.transaction(async (t) => {
+                const billInTx = await db.Bill.findOne({
+                    where: { id: productCode },
+                    include: [
+                        {
+                            model: db.ShoppingCart,
+                            attributes: ['billId', 'colorSizeId', 'total']
+                        }
+                    ],
+                    transaction: t,
+                    lock: t.LOCK.UPDATE
+                });
 
-            })
+                if (!billInTx) {
+                    return { DT: '', EC: -1, EM: 'Err: bill not found' };
+                }
 
+                if (billInTx.status === 'Done') {
+                    return { DT: '', EC: 0, EM: 'Already processed' };
+                }
 
-            if (webHookData.transferType === 'in'
-
-                // && _.isEqual(webHookData.transferAmount, +bill.amount) === true
-
-            ) {
-                bill.set({
+                billInTx.set({
                     status: 'Done',
                     bankName: webHookData.gateway,
                     accountNumber: webHookData.accountNumber
-                })
+                });
 
+                for (const item of billInTx.ShoppingCarts) {
+                    const product = await db.Color_Size.findOne({
+                        where: { id: item.colorSizeId },
+                        transaction: t,
+                        lock: t.LOCK.UPDATE
+                    });
 
+                    if (!product) {
+                        return { DT: '', EC: -1, EM: 'Err: product color/size not found' };
+                    }
 
-                bill.ShoppingCarts.map(async (item, index) => {
-
-                    let product = await db.Color_Size.findOne({
-                        where: { id: item.colorSizeId }
-                    })
-                    console.log('product', product)
-
-                    product.set({
-                        stock: product.stock - (+item.total)
-                    })
-
-                    await product.save();
-                })
-
-
-                await bill.save();
-
-                return {
-                    DT: '',
-                    EC: 0,
-                    EM: '!'
+                    const newStock = product.stock - (+item.total);
+                    product.set({ stock: newStock < 0 ? 0 : newStock });
+                    await product.save({ transaction: t });
                 }
-            }
 
-            else {
+                await billInTx.save({ transaction: t });
+                return { DT: '', EC: 0, EM: '!' };
+            });
 
-
-                return {
-                    DT: '',
-                    EC: 0,
-                    EM: '!'
-                }
-            }
-
+            return result;
         }
+
+        // For other transfer types, return default success
+        return { DT: '', EC: 0, EM: '!' };
     }
     catch (e) {
         console.log(e);
+        return { DT: '', EC: -1, EM: e.message };
     }
 }
 
