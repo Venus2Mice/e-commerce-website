@@ -7,6 +7,10 @@ import JWTservice from '../middleware/JWTservice'
 import billController from '../controllers/billController'
 import reviewController from '../controllers/reviewController'
 import implementOpenAIService from '../middleware/OpenAI'
+import validate from '../middleware/validationMiddleware';
+import userValidation from '../validations/userValidation';
+import reviewValidation from '../validations/reviewValidation';
+
 const router = express.Router();
 
 /**
@@ -18,43 +22,52 @@ const router = express.Router();
 
 const initApiRoutes = (app) => {
 
-    app.use(JWTservice.checkCookieService, JWTservice.authenticateCookieService);
+    // ==========================================
+    // PUBLIC ROUTES (No Auth Required)
+    // ==========================================
 
-    //user
-    router.get("/account", userController.handleAccount)
-    router.post("/user/login", userController.handleLogin)
-    router.post("/user/register", userController.handleRegister)
-    router.get("/user/get", userController.handleGetUser)
-    router.put('/user/update', userController.handleUpdateUser)
-
-    //clothes
-
-    router.post('/clothes/create', clothesController.handleCreateClothes);
+    // User Auth
+    router.post("/user/login", validate(userValidation.loginSchema), userController.handleLogin)
+    router.post("/user/register", validate(userValidation.registerSchema), userController.handleRegister)
+    router.get("/account", userController.handleAccount) // Often public to check status, or handles its own null check
+    
+    // Public Data Access
     router.get('/clothes/get', clothesController.handleGetClothes);
+    router.get('/review/get', reviewController.handleGetReview);
+    
+    // Webhooks & Third Party
+    router.post('/hooks/payment', webHookController.handleGetPayment);
+    router.get('/socket.io', userController.handleGetRoomId)
+    router.get('/openAI/get', implementOpenAIService)
+
+
+    // ==========================================
+    // PROTECTED ROUTES (Auth Required)
+    // ==========================================
+    
+    // Apply Auth Middleware to all routes defined below this point
+    router.use(JWTservice.checkCookieService);
+    router.use(JWTservice.authenticateCookieService);
+
+    // User Management
+    router.get("/user/get", userController.handleGetUser)
+    router.put('/user/update', validate(userValidation.updateUserSchema), userController.handleUpdateUser)
+
+    // Clothes Management
+    router.post('/clothes/create', clothesController.handleCreateClothes);
     router.put('/clothes/update', clothesController.handleUpdateClothes);
     router.delete('/clothes/delete', clothesController.handleDeleteClothes);
 
-    //checkout + bill
-
+    // Checkout & Bill
     router.post('/bill/create', billController.handleCreateBill);
     router.put('/bill/update', billController.handleUpdateBill);
     router.get('/bill/get', billController.handleGetBill);
     router.delete('/bill/delete', billController.handleDeleteBill);
 
-    //webhook
-    router.post('/hooks/payment', webHookController.handleGetPayment);
-
-    //Reviews
-    router.post('/review/create', reviewController.handleCreateReview);
-    router.put('/review/update', reviewController.handleUpdateReview);
-    router.get('/review/get', reviewController.handleGetReview);
+    // Reviews Management
+    router.post('/review/create', validate(reviewValidation.createReviewSchema), reviewController.handleCreateReview);
+    router.put('/review/update', validate(reviewValidation.updateReviewSchema), reviewController.handleUpdateReview);
     router.delete('/review/delete', reviewController.handleDeleteReview);
-
-    //Socket
-    router.get('/socket.io', userController.handleGetRoomId)
-
-    //Open AI
-    router.get('/openAI/get', implementOpenAIService)
 
     return app.use("/api", router)
 

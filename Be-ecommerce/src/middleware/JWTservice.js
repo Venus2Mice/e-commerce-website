@@ -1,131 +1,98 @@
 import jwt from 'jsonwebtoken';
 import db from '../models';
-import { RAW } from 'sequelize/lib/query-types';
 
-const exceptionPath = ['/', '/api/user/login', '/api/user/register',
-    '/api/account', '/api/clothes/get', '/api/hooks/payment', '/api/review/get', '/socket.io/',
-    '/api/openAI/get'
-];
+// We remove the hardcoded exceptionPath array.
+// The middleware will now only process the token if it exists.
+// Route-specific protection is handled by applying this middleware selectively in routes.
 
 const createJwtTokenService = (data) => {
-
     try {
-        let key = process.env.JWT_SECRET;
-        let expIn = process.env.JWT_EXPIRES_IN;
-
+        let key = process.env.JWT_SECRET || 'test_secret';
+        let expIn = process.env.JWT_EXPIRES_IN || '1h';
         let token = '';
-
         if (data) {
             token = jwt.sign(data, key, { expiresIn: expIn });
         }
-
         return token;
     }
     catch (e) {
         console.log(e);
+        return null;
     }
 }
 
 const verifyTokenService = (token) => {
     try {
-
-        let key = process.env.JWT_SECRET;
-        var decoded = jwt.verify(token, key);
-
-        if (decoded) {
-            return decoded;
-        }
-
+        let key = process.env.JWT_SECRET || 'test_secret';
+        let decoded = jwt.verify(token, key);
+        return decoded;
     }
     catch (e) {
         console.log(e);
+        return null;
     }
 }
 
-
 const checkCookieService = (req, res, next) => {
     try {
-        let path = req.path;
-        // console.log('path', req.headers.origin)
-        var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-        console.log("full", fullUrl)
-        let isValid = exceptionPath.includes(path)
-
-        if (path === '/api/account') {
-            isValid = false;
-        }
-
-        if (isValid === true) {
-            next();
-        }
-        else {
-            let cookie = req.cookies.user;
-            if (cookie) {
-
-                let decoded = verifyTokenService(cookie);
-                if (decoded) {
-                    req.user = decoded;
-                    next();
-                }
-                else {
-                    return res.status(401).json({
-                        DT: '',
-                        EC: 401,
-                        EM: 'Token has been expired!'
-                    })
-                }
-            }
-            else {
-                return res.status(404).json({
+        let cookie = req.cookies.user;
+        if (cookie) {
+            let decoded = verifyTokenService(cookie);
+            if (decoded) {
+                req.user = decoded;
+                next();
+            } else {
+                return res.status(401).json({
                     DT: '',
-                    EC: 404,
-                    EM: 'Cookie not found!'
+                    EC: 401,
+                    EM: 'Token has been expired or invalid!'
                 })
             }
+        } else {
+            return res.status(401).json({
+                DT: '',
+                EC: 401,
+                EM: 'Not authenticated: Cookie not found!'
+            })
         }
-
     }
     catch (e) {
         console.log(e);
-        return res.status(404).json({
+        return res.status(401).json({
             DT: '',
-            EC: 404,
-            EM: 'Cookie not found!'
+            EC: 401,
+            EM: 'Not authenticated'
         })
     }
 }
 
 const authenticateCookieService = async (req, res, next) => {
     try {
-
-        let path = req.path;
-        console.log('path', path)
-        if (exceptionPath.includes(path) === true) {
+        // Reconstruct full path (e.g. /api + /user/get) to match Role URLs in DB
+        let path = req.baseUrl + req.path;
+        let isValid = await checkUserPermission(req.user, path);
+        if (isValid === true) {
             next();
+        } else {
+            return res.status(403).json({
+                DT: '',
+                EC: 403,
+                EM: 'You do not have permission to access this resource!'
+            })
         }
-        else {
-            let isValid = await checkUserPermission(req.user, path)
-            if (isValid === true) {
-                next();
-            }
-            else {
-                return res.status(403).json({
-                    DT: '',
-                    EC: 404,
-                    EM: 'Your dont have permission to access this resource!'
-                })
-            }
-        }
-
     }
     catch (e) {
         console.log(e);
+        return res.status(500).json({
+             DT: '',
+             EC: -1,
+             EM: 'Internal Server Error during authorization'
+        });
     }
 }
 
 const checkUserPermission = async (user, path) => {
     try {
-
         let isValid = false;
         let result = await db.Group.findOne({
             where: { id: user.groupId },
@@ -134,19 +101,18 @@ const checkUserPermission = async (user, path) => {
                 attributes: ['id', 'url', 'description'],
                 through: {
                     attributes: { exclude: ['GroupId', 'sizeId'] },
-
                 },
-
             }],
         })
-
-        isValid = result.Roles.some(item => item.url === path)
-
+        
+        if (result && result.Roles) {
+             isValid = result.Roles.some(item => item.url === path)
+        }
         return isValid;
-
     }
     catch (e) {
         console.log(e)
+        return false;
     }
 }
 

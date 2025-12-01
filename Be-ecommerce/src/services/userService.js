@@ -31,7 +31,9 @@ const getUserService = async (type, userId) => {
 
 
                 convertedData = data.map(item => {
-                    item.avatar = Buffer.from(item.avatar, 'base64').toString('binary');
+                    if (item.avatar) {
+                         item.avatar = Buffer.from(item.avatar, 'base64').toString('binary');
+                    }
                     return item
                 })
 
@@ -61,7 +63,9 @@ const getUserService = async (type, userId) => {
 
 
                 convertedData = data.map(item => {
-                    item.avatar = new Buffer(item.avatar, 'base64').toString('binary');
+                     if (item.avatar) {
+                        item.avatar = Buffer.from(item.avatar, 'base64').toString('binary');
+                    }
                     return item
                 })
                 return {
@@ -115,7 +119,10 @@ const loginService = async (loginAcc, password) => {
             if (!_.isEmpty(user)) {
                 let checkPassword = bcrypt.compareSync(password, user.password);
                 if (checkPassword === true) {
-                    let base64String = Buffer.from(user.avatar, 'base64').toString('binary');
+                    let base64String = '';
+                    if (user.avatar) {
+                        base64String = Buffer.from(user.avatar, 'base64').toString('binary');
+                    }
 
 
                     let data = {
